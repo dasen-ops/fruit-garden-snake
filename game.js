@@ -99,9 +99,9 @@ function schedule() {
   stepMs = slowMs > 0 ? 300 : 180;
   timer = setInterval(tick, stepMs);
 }
-function focusBoardOnPhone() {
+function focusGameOnPhone() {
   if (typeof window === 'undefined' || !window.matchMedia('(max-width: 760px)').matches) return;
-  requestAnimationFrame(() => document.querySelector('.board').scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  requestAnimationFrame(() => document.querySelector('.game').scrollIntoView({ behavior: 'smooth', block: 'start' }));
 }
 function addScore(points) {
   score += points;
@@ -161,7 +161,7 @@ function start(levelNumber = currentLevel) {
   clearInterval(timer); reset(levelNumber); state = 'playing'; $('cover').hidden = true;
   $('pause').disabled = false; $('pause').textContent = '暂停 Ⅱ';
   $('status').textContent = `${level.name}开始！${level.timeMs / 1000} 秒内吃到 ${level.target} 颗苹果。`;
-  schedule(); focusBoardOnPhone();
+  schedule(); focusGameOnPhone();
 }
 function finish(kind = 'crash') {
   state = 'over'; clearInterval(timer); timer = null; $('pause').disabled = true;
@@ -182,6 +182,7 @@ function finish(kind = 'crash') {
     $('status').textContent = '撞到了，没关系，再试一次吧。';
   }
   updateHUD();
+  focusGameOnPhone();
 }
 
 function eatApple(isGold) {
