@@ -99,6 +99,10 @@ function schedule() {
   stepMs = slowMs > 0 ? 300 : 180;
   timer = setInterval(tick, stepMs);
 }
+function focusBoardOnPhone() {
+  if (typeof window === 'undefined' || !window.matchMedia('(max-width: 760px)').matches) return;
+  requestAnimationFrame(() => document.querySelector('.board').scrollIntoView({ behavior: 'smooth', block: 'start' }));
+}
 function addScore(points) {
   score += points;
   if (score > best) {
@@ -157,7 +161,7 @@ function start(levelNumber = currentLevel) {
   clearInterval(timer); reset(levelNumber); state = 'playing'; $('cover').hidden = true;
   $('pause').disabled = false; $('pause').textContent = '暂停 Ⅱ';
   $('status').textContent = `${level.name}开始！${level.timeMs / 1000} 秒内吃到 ${level.target} 颗苹果。`;
-  schedule();
+  schedule(); focusBoardOnPhone();
 }
 function finish(kind = 'crash') {
   state = 'over'; clearInterval(timer); timer = null; $('pause').disabled = true;
@@ -263,6 +267,7 @@ function pause() {
 
 $('start').onclick = () => state === 'paused' ? pause() : start(nextLevel || currentLevel);
 $('restart').onclick = () => start(currentLevel); $('pause').onclick = pause;
+document.querySelectorAll('[data-restart]').forEach(b => b.onclick = () => start(currentLevel));
 document.querySelectorAll('[data-dir]').forEach(b => b.onclick = () => turn(b.dataset.dir));
 document.addEventListener('keydown', e => {
   const keys = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', w: 'up', s: 'down', a: 'left', d: 'right' };
@@ -270,14 +275,5 @@ document.addEventListener('keydown', e => {
   if (name) { e.preventDefault(); turn(name); }
   else if (e.code === 'Space' && (state === 'playing' || state === 'paused')) { e.preventDefault(); if (!e.repeat) pause(); }
 });
-let touch = null;
-canvas.addEventListener('pointerdown', e => { touch = { x: e.clientX, y: e.clientY }; canvas.setPointerCapture(e.pointerId); });
-canvas.addEventListener('pointerup', e => {
-  if (!touch) return;
-  const dx = e.clientX - touch.x, dy = e.clientY - touch.y; touch = null;
-  if (Math.max(Math.abs(dx), Math.abs(dy)) < 12) return;
-  turn(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
-});
-canvas.addEventListener('pointercancel', () => touch = null);
 document.addEventListener('visibilitychange', () => { if (document.hidden && state === 'playing') pause(); });
 reset();
